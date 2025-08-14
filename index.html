@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Patrimônio</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Outfit', sans-serif; font-weight: 300; margin: 0; padding: 20px; background: #f6f8fb; color: #464646; }
+        .container { max-width: 800px; margin: 28px auto; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 8px 30px rgba(11,36,71,0.06); }
+        h1 { font-size: 24px; margin-bottom: 10px; color: #464646; text-align: center; }
+        b { font-family: 'Outfit', sans-serif; font-weight: 700; color: #FF6400; }
+        p.lead { color: #374151; margin-top: 0; }
+        .inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .input-group { display: flex; flex-direction: column; }
+        label { font-size: 14px; color: #334155; margin-bottom: 5px; }
+        input.valor { padding: 10px; border: 1px solid #e6e9ef; border-radius: 8px; font-size: 16px; }
+        .seguro-container { display: flex; align-items: flex-end; gap: 10px; }
+        .seguro-container .input-group { flex-grow: 1; }
+        .btn-toggle { padding: 10px 12px; font-size: 14px; font-weight: bold; border-radius: 8px; cursor: pointer; border: 1px solid #FF6400; background-color: white; color: #FF6400; }
+        .btn-toggle.active { background-color: #FF6400; color: white; }
+        .resultados { margin-top: 20px; text-align: center; }
+        .valores-finais { display: flex; justify-content: space-around; flex-wrap: wrap; margin-bottom: 20px; }
+        .valores-finais p { font-size: 18px; font-weight: bold; color: #464646; }
+        canvas { max-width: 100%; height: auto; margin-bottom: 20px; }
+        .custo-valorizacao { text-align: center; font-size: 16px; margin-bottom: 10px; }
+        .custo-valorizacao b { font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Simulador de Patrimônio</h1>
+        <p class="lead">Compare o crescimento do seu patrimônio com <b>consórcio</b> para compra de imóvel vs. investimento em <b>renda fixa</b>.</p>
+
+        <div class="inputs">
+            <div class="input-group">
+                <label for="valorCarta"><b>Valor da Carta de Crédito (R$)</b></label>
+                <input type="number" id="valorCarta" value="300000" class="valor">
+            </div>
+            <div class="input-group">
+                <label for="taxaAdmTotal"><b>Taxa de Administração Total (%)</b></label>
+                <input type="number" id="taxaAdmTotal" value="19" class="valor">
+            </div>
+            <div class="input-group">
+                <label for="fundoReservaTotal"><b>Fundo de Reserva Total (%)</b></label>
+                <input type="number" id="fundoReservaTotal" value="2" class="valor">
+            </div>
+            <div class="seguro-container">
+                <div class="input-group">
+                    <label for="percentualSeguroMensal"><b>Seguro Mensal (% da Carta)</b></label>
+                    <input type="number" id="percentualSeguroMensal" value="0.038" step="0.001" class="valor">
+                </div>
+                <button id="toggleSeguroBtn" class="btn-toggle active"><b>Com Seguro</b></button>
+            </div>
+            <div class="input-group">
+                <label for="prazoTotalMeses"><b>Prazo Total (meses)</b></label>
+                <input type="number" id="prazoTotalMeses" value="200" class="valor">
+            </div>
+            <div class="input-group">
+                <label for="percentualReducao"><b>Redução da Parcela até Contemplação (%)</b></label>
+                <input type="number" id="percentualReducao" value="50" class="valor">
+            </div>
+            <div class="input-group">
+                <label for="mesContemplacao"><b>Mês da Contemplação</b></label>
+                <input type="number" id="mesContemplacao" value="24" class="valor">
+            </div>
+            <div class="input-group">
+                <label for="reajusteAnualCarta"><b>Reajuste Anual da Carta (%)</b></label>
+                <input type="number" id="reajusteAnualCarta" value="5" class="valor">
+            </div>
+            <div class="input-group">
+                <label for="rendimentoAnualRF"><b>Rendimento Anual da Renda Fixa (%)</b></label>
+                <input type="number" id="rendimentoAnualRF" value="8" class="valor">
+            </div>
+            <div class="input-group">
+                <label for="valorAluguelInicial"><b>Aluguel Inicial (R$)</b></label>
+                <input type="number" id="valorAluguelInicial" value="1500" class="valor">
+            </div>
+            <div class="input-group">
+                <label for="valorizacaoAnualImovel"><b>Valorização Anual do Imóvel (%)</b></label>
+                <input type="number" id="valorizacaoAnualImovel" value="5" class="valor">
+            </div>
+        </div>
+
+        <div class="resultados">
+            <h2>Resultados da Simulação</h2>
+            <div class="valores-finais">
+                <p><b>Patrimônio Consórcio:</b> <span id="patrimonioConsorcio">R$ 0,00</span></p>
+                <p><b>Patrimônio Renda Fixa:</b> <span id="patrimonioRendaFixa">R$ 0,00</span></p>
+            </div>
+            <canvas id="graficoComparativo"></canvas>
+            <div class="custo-valorizacao">
+                <b>Custo Total Estimado do Consórcio:</b> <span id="custoTotalConsorcio">R$ 0,00</span>
+                <br>
+                <b>Soma Total dos Aportes:</b> <span id="somaAportesTotal">R$ 0,00</span>
+                <br>
+                <b>Valor Final do Imóvel:</b> <span id="valorFinalImovel">R$ 0,00</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function simularInvestimento(parametros) {
+            let {
+                valorCarta,
+                taxaAdmTotal,
+                fundoReservaTotal,
+                percentualSeguroMensal,
+                prazoTotalMeses,
+                percentualReducao,
+                mesContemplacao,
+                reajusteAnualCarta,
+                rendimentoAnualRF,
+                valorAluguelInicial,
+                valorizacaoAnualImovel,
+                seguroHabilitado
+            } = parametros;
+
+            const taxaAdmTotalDecimal = taxaAdmTotal / 100;
+            const fundoReservaTotalDecimal = fundoReservaTotal / 100;
+            const percentualReducaoDecimal = percentualReducao / 100;
+            const reajusteAnualCartaDecimal = reajusteAnualCarta / 100;
+            const rendimentoMensalRF = Math.pow(1 + rendimentoAnualRF / 100, 1 / 12) - 1;
+
+            let patrimonioConsorcio = 0;
+            let patrimonioRendaFixa = 0;
+            let valorImovel = 0;
+            let valorCartaAtualizada = valorCarta;
+            let valorAluguelAtualizado = valorAluguelInicial;
+            let parcelasPagasTotal = 0;
+            let seguroPagoTotal = 0;
+            let custoTotalConsorcio = 0;
+            let somaAportesTotal = 0;
+            let valorFinalImovel = 0;
+
+            let dadosGraficoConsorcio = [0];
+            let dadosGraficoRendaFixa = [0];
+            let labelsGrafico = ["Início"];
+
+            for (let mes = 1; mes <= prazoTotalMeses; mes++) {
+                let parcelaAtual;
+                let aporteMensalRF;
+
+                // Reajuste Anual (a cada 12 meses)
+                if ((mes - 1) % 12 === 0 && mes > 1) {
+                    valorCartaAtualizada *= (1 + reajusteAnualCartaDecimal);
+                    if (mes >= mesContemplacao && valorImovel > 0) {
+                        valorImovel *= (1 + valorizacaoAnualImovel / 100);
+                        valorAluguelAtualizado = valorImovel * (valorAluguelInicial / valorCarta);
+                    }
+                }
+                
+                const seguroMensalCalculado = seguroHabilitado ? valorCartaAtualizada * (percentualSeguroMensal / 100) : 0;
+
+                if (mes < mesContemplacao) {
+                    const parcelaBase = (valorCartaAtualizada * (1 + taxaAdmTotalDecimal + fundoReservaTotalDecimal)) / prazoTotalMeses;
+                    parcelaAtual = (parcelaBase * (1 - percentualReducaoDecimal)) + seguroMensalCalculado;
+                    parcelasPagasTotal += parcelaAtual;
+                    seguroPagoTotal += seguroMensalCalculado;
+
+                    const taxaAdmPaga = valorCarta * taxaAdmTotalDecimal * (mes / prazoTotalMeses);
+                    patrimonioConsorcio = parcelasPagasTotal - taxaAdmPaga - seguroPagoTotal;
+
+                    aporteMensalRF = parcelaAtual;
+                } else { // No mês da contemplação e após
+                    if (mes === mesContemplacao && valorImovel === 0) {
+                        valorImovel = valorCartaAtualizada;
+                        patrimonioConsorcio = valorImovel;
+                    }
+
+                    const parcelaBaseSemReducao = (valorCartaAtualizada * (1 + taxaAdmTotalDecimal + fundoReservaTotalDecimal)) / prazoTotalMeses;
+                    const parcelaBaseComReducao = parcelaBaseSemReducao * (1 - percentualReducaoDecimal);
+                    const saldoResidual = (parcelaBaseSemReducao - parcelaBaseComReducao) * mesContemplacao;
+
+                    parcelaAtual = parcelaBaseSemReducao + (saldoResidual / (prazoTotalMeses - mesContemplacao)) + seguroMensalCalculado;
+
+                    if (mes > mesContemplacao) {
+                      patrimonioConsorcio = valorImovel;
+                    }
+
+                    aporteMensalRF = parcelaAtual - valorAluguelAtualizado;
+                }
+                
+                // Custo total acumulado, considerando os reajustes
+                custoTotalConsorcio += parcelaAtual;
+                somaAportesTotal += aporteMensalRF;
+
+                // A valorização do imóvel é o próprio patrimônio do consórcio ao final
+                valorFinalImovel = patrimonioConsorcio;
+
+                // Aporte na Renda Fixa e cálculo de juros
+                patrimonioRendaFixa = (patrimonioRendaFixa + aporteMensalRF) * (1 + rendimentoMensalRF);
+
+                // Armazena dados anuais para o gráfico
+                if (mes % 12 === 0 || mes === prazoTotalMeses) {
+                    labelsGrafico.push(`Ano ${Math.ceil(mes / 12)}`);
+                    dadosGraficoConsorcio.push(patrimonioConsorcio);
+                    dadosGraficoRendaFixa.push(patrimonioRendaFixa);
+                }
+            }
+
+            return {
+                patrimonioFinalConsorcio: patrimonioConsorcio,
+                patrimonioFinalRendaFixa: patrimonioRendaFixa,
+                dadosGraficoConsorcio,
+                dadosGraficoRendaFixa,
+                labelsGrafico,
+                custoTotalConsorcio: custoTotalConsorcio,
+                somaAportesTotal: somaAportesTotal,
+                valorFinalImovel: valorFinalImovel
+            };
+        }
+
+        // --- Lógica para o HTML e Gráfico ---
+        const ctx = document.getElementById('graficoComparativo').getContext('2d');
+        let myChart;
+        let seguroHabilitado = true;
+
+        function atualizarSimulacao() {
+            const parametros = {
+                valorCarta: parseFloat(document.getElementById('valorCarta').value),
+                taxaAdmTotal: parseFloat(document.getElementById('taxaAdmTotal').value),
+                fundoReservaTotal: parseFloat(document.getElementById('fundoReservaTotal').value),
+                percentualSeguroMensal: parseFloat(document.getElementById('percentualSeguroMensal').value),
+                prazoTotalMeses: parseInt(document.getElementById('prazoTotalMeses').value),
+                percentualReducao: parseFloat(document.getElementById('percentualReducao').value),
+                mesContemplacao: parseInt(document.getElementById('mesContemplacao').value),
+                reajusteAnualCarta: parseFloat(document.getElementById('reajusteAnualCarta').value),
+                rendimentoAnualRF: parseFloat(document.getElementById('rendimentoAnualRF').value),
+                valorAluguelInicial: parseFloat(document.getElementById('valorAluguelInicial').value),
+                valorizacaoAnualImovel: parseFloat(document.getElementById('valorizacaoAnualImovel').value),
+                seguroHabilitado: seguroHabilitado
+            };
+
+            const resultado = simularInvestimento(parametros);
+
+            document.getElementById('patrimonioConsorcio').innerText = `R$ ${resultado.patrimonioFinalConsorcio.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('patrimonioRendaFixa').innerText = `R$ ${resultado.patrimonioFinalRendaFixa.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('custoTotalConsorcio').innerText = `R$ ${resultado.custoTotalConsorcio.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('somaAportesTotal').innerText = `R$ ${resultado.somaAportesTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('valorFinalImovel').innerText = `R$ ${resultado.valorFinalImovel.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+            if (myChart) {
+                myChart.destroy();
+            }
+
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: resultado.labelsGrafico,
+                    datasets: [{
+                        label: 'Patrimônio Consórcio',
+                        data: resultado.dadosGraficoConsorcio,
+                        borderColor: '#FF6400',
+                        backgroundColor: 'rgba(255, 100, 0, 0.2)',
+                        fill: true,
+                        tension: 0.3
+                    }, {
+                        label: 'Patrimônio Renda Fixa',
+                        data: resultado.dadosGraficoRendaFixa,
+                        borderColor: '#464646',
+                        backgroundColor: 'rgba(70, 70, 70, 0.2)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R$ ' + value.toLocaleString('pt-BR');
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += `R$ ${context.parsed.y.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        const toggleSeguroBtn = document.getElementById('toggleSeguroBtn');
+        toggleSeguroBtn.addEventListener('click', () => {
+            seguroHabilitado = !seguroHabilitado;
+            if (seguroHabilitado) {
+                toggleSeguroBtn.innerHTML = '<b>Com Seguro</b>';
+                toggleSeguroBtn.classList.add('active');
+            } else {
+                toggleSeguroBtn.innerHTML = '<b>Sem Seguro</b>';
+                toggleSeguroBtn.classList.remove('active');
+            }
+            atualizarSimulacao();
+        });
+
+        document.addEventListener('DOMContentLoaded', atualizarSimulacao);
+        document.querySelectorAll('input.valor').forEach(input => input.addEventListener('input', atualizarSimulacao));
+    </script>
+</body>
+</html>
