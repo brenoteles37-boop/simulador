@@ -64,6 +64,17 @@
             margin-top: 10px;
             display: none;
         }
+        .roi-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .roi-container span {
+            color: #464646;
+        }
         @media print {
             .table-container, #salvarPdfBtn {
                 display: none !important;
@@ -176,6 +187,13 @@
             <div class="save-btn-container">
                 <button id="salvarPdfBtn">Salvar em PDF</button>
             </div>
+            
+            <!-- Novos indicadores de ROI -->
+            <div class="roi-container">
+                <p><b>ROI Consórcio:</b> <span id="roiConsorcio">0,00%</span></p>
+                <p><b>ROI Renda Fixa:</b> <span id="roiRendaFixa">0,00%</span></p>
+            </div>
+
             <div class="valores-finais">
                 <p><b id="patrimonioConsorcioLabel">Patrimônio Consórcio:</b> <span id="patrimonioConsorcio">R$ 0,00</span></p>
                 <p><b>Patrimônio Renda Fixa:</b> <span id="patrimonioRendaFixa">R$ 0,00</span></p>
@@ -245,6 +263,14 @@
         // Função para formatar valores monetários para a tabela
         function formatCurrency(value) {
             return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+        }
+
+        // Função para formatar o ROI
+        function formatROI(value) {
+            if (isNaN(value) || !isFinite(value)) {
+                return 'N/A';
+            }
+            return value.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '%';
         }
 
         // Simulação principal
@@ -424,10 +450,16 @@
             }
             
             const valorAluguelInicial = valorCarta * (percentualAluguel / 100);
+            
+            // Calculate ROI
+            const roiConsorcio = (patrimonioConsorcio - custoTotalOutflow) / custoTotalOutflow * 100;
+            const roiRendaFixa = (patrimonioRendaFixa - somaAportesTotal) / somaAportesTotal * 100;
 
             return {
                 patrimonioFinalConsorcio: patrimonioConsorcio,
                 patrimonioFinalRendaFixa: patrimonioRendaFixa,
+                roiConsorcio,
+                roiRendaFixa,
                 dadosGraficoConsorcio,
                 dadosGraficoRendaFixa,
                 labelsGrafico,
@@ -520,7 +552,9 @@
             }
             
             const resultado = simularInvestimento(parametros);
-
+            
+            document.getElementById('roiConsorcio').innerText = formatROI(resultado.roiConsorcio);
+            document.getElementById('roiRendaFixa').innerText = formatROI(resultado.roiRendaFixa);
             document.getElementById('aluguelInicialDisplay').innerText = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(resultado.valorAluguelNaContemplacao);
             document.getElementById('patrimonioConsorcio').innerText = `R$ ${resultado.patrimonioFinalConsorcio.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             document.getElementById('patrimonioRendaFixa').innerText = `R$ ${resultado.patrimonioFinalRendaFixa.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
