@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulador de Patrimônio</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;700&display=swap" rel="stylesheet">
@@ -17,72 +16,36 @@
         p.lead { color: #374151; margin-top: 0; }
         .inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .input-group { display: flex; flex-direction: column; }
+        .hidden-input-group { display: none; }
         label { font-size: 14px; color: #334155; margin-bottom: 5px; }
-        input.valor { padding: 10px; border: 1px solid #e6e9ef; border-radius: 8px; font-size: 16px; }
+        input.valor { padding: 10px; border: 1px solid #e6e9ef; border-radius: 8px; font-size: 16px; width: 100%; box-sizing: border-box; }
         .seguro-container { display: flex; flex-direction: column; gap: 10px; }
         .seguro-container .input-group { flex-grow: 1; }
-        .scenario-selection { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .scenario-selection { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px; }
         .scenario-btn { padding: 10px 12px; font-size: 14px; font-weight: bold; border-radius: 8px; cursor: pointer; border: 1px solid #464646; background-color: white; color: #464646; text-align: center; transition: all 0.2s ease-in-out; }
         .scenario-btn.selected { background-color: #464646; color: white; }
-        .radio-group { display: flex; align-items: center; justify-content: space-around; gap: 10px; }
-        .radio-btn { padding: 10px 12px; font-size: 14px; font-weight: bold; border-radius: 8px; cursor: pointer; border: 1px solid #464646; background-color: white; color: #464646; text-align: center; }
+        .radio-group { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-around; gap: 10px; }
+        .radio-btn { padding: 10px 12px; font-size: 14px; font-weight: bold; border-radius: 8px; cursor: pointer; border: 1px solid #464646; background-color: white; color: #464646; text-align: center; flex-grow: 1; }
         .radio-btn.selected { background-color: #464646; color: white; }
         .resultados { margin-top: 20px; text-align: center; }
         .valores-finais { display: flex; justify-content: space-around; flex-wrap: wrap; margin-bottom: 20px; }
-        .valores-finais p { font-size: 18px; font-weight: bold; color: #464646; }
+        .valores-finais p { font-size: 18px; font-weight: bold; color: #464646; margin: 5px; }
         canvas { max-width: 100%; height: auto; margin-bottom: 20px; }
         .custo-valorizacao { text-align: center; font-size: 16px; margin-bottom: 10px; }
         .custo-valorizacao b { font-size: 18px; }
-        .value-display { padding: 10px; border: 1px solid #e6e9ef; border-radius: 8px; font-size: 16px; background-color: #f0f2f5; display: flex; align-items: center; justify-content: center; }
+        .value-display { padding: 10px; border: 1px solid #e6e9ef; border-radius: 8px; font-size: 16px; background-color: #f0f2f5; display: flex; align-items: center; justify-content: center; text-align: center; }
         .table-container { max-height: 400px; overflow-y: auto; overflow-x: auto; margin-top: 20px; padding: 10px; border: 1px solid #e6e9ef; border-radius: 8px; background-color: #fcfcfc; }
         table { width: 100%; border-collapse: collapse; font-size: 14px; text-align: right; }
         thead { position: sticky; top: 0; background-color: #fff; z-index: 10; }
         th, td { padding: 10px; border-bottom: 1px solid #e6e9ef; }
         th { background-color: #f0f2f5; font-weight: bold; text-align: center; white-space: nowrap; }
         tbody tr:nth-child(even) { background-color: #fafafa; }
+        .error-message { color: #d63031; font-weight: bold; text-align: center; margin-top: 10px; display: none; }
         
-        .save-btn-container { text-align: center; margin-bottom: 20px; }
-        #salvarPdfBtn {
-            background-color: #FF6400;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: background-color 0.2s;
-            box-shadow: 0 4px 15px rgba(255,100,0,0.3);
-        }
-        #salvarPdfBtn:hover {
-            background-color: #e55a00;
-        }
-        .error-message {
-            color: #d63031;
-            font-weight: bold;
-            text-align: center;
-            margin-top: 10px;
-            display: none;
-        }
-        .roi-container {
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            margin-bottom: 15px;
-            font-size: 18px;
-            font-weight: bold;
-        }
-        .roi-container span {
-            color: #464646;
-        }
-        @media print {
-            .table-container, #salvarPdfBtn {
-                display: none !important;
-            }
-            .container {
-                box-shadow: none;
-                border: none;
-            }
+        @media (max-width: 600px) {
+            .inputs { grid-template-columns: 1fr; }
+            .radio-group, .scenario-selection { flex-direction: column; }
+            .radio-btn, .scenario-btn { width: 100%; }
         }
     </style>
 </head>
@@ -93,22 +56,18 @@
         <div id="error-message" class="error-message"></div>
 
         <div class="inputs">
-            <!-- Valor da Carta de Crédito -->
             <div class="input-group">
                 <label for="valorCarta"><b>Valor da Carta de Crédito (R$)</b></label>
                 <input type="text" id="valorCarta" value="R$ 300.000,00" class="valor" data-tipo="moeda">
             </div>
-            <!-- Taxa de Administração Total -->
             <div class="input-group">
                 <label for="taxaAdmTotal"><b>Taxa de Administração Total (%)</b></label>
                 <input type="text" id="taxaAdmTotal" value="19%" class="valor" data-tipo="percentual">
             </div>
-            <!-- Fundo de Reserva Total -->
             <div class="input-group">
                 <label for="fundoReservaTotal"><b>Fundo de Reserva Total (%)</b></label>
                 <input type="text" id="fundoReservaTotal" value="2%" class="valor" data-tipo="percentual">
             </div>
-            <!-- Seguro Mensal -->
             <div class="seguro-container">
                 <div class="input-group">
                     <label for="percentualSeguroMensal"><b>Seguro Mensal (% da Carta)</b></label>
@@ -119,64 +78,52 @@
                     <button id="btnSemSeguro" class="radio-btn selected"><b>Sem Seguro</b></button>
                 </div>
             </div>
-            <!-- Prazo Total -->
             <div class="input-group">
                 <label for="prazoTotalMeses"><b>Prazo Total (meses)</b></label>
                 <input type="number" id="prazoTotalMeses" value="200" class="valor">
             </div>
-            <!-- Redução da Parcela -->
             <div class="input-group">
                 <label for="percentualReducao"><b>Redução da Parcela até Contemplação (% e Prazo)</b></label>
                 <input type="text" id="percentualReducao" value="50%" class="valor" data-tipo="percentual">
             </div>
-            <!-- Mês da Contemplação -->
             <div class="input-group">
                 <label for="mesContemplacao"><b>Mês da Contemplação</b></label>
                 <input type="number" id="mesContemplacao" value="13" class="valor">
             </div>
-            <!-- Mês da Compra do Imóvel -->
-            <div class="input-group">
+            <div id="mesCompraImovelGroup" class="input-group hidden-input-group">
                 <label for="mesCompraImovel"><b>Mês da Compra do Imóvel</b></label>
                 <input type="number" id="mesCompraImovel" value="0" class="valor">
             </div>
-            <!-- Percentual do Lance -->
             <div class="input-group">
                 <label for="percentualLance"><b>Percentual do Lance (%)</b></label>
                 <input type="text" id="percentualLance" value="30%" class="valor" data-tipo="percentual">
             </div>
-            <!-- Valor do Lance (Calculado) -->
             <div class="input-group">
                 <label for="valorLance"><b>Valor do Lance (R$)</b></label>
                 <p id="valorLance" class="value-display">R$ 0,00</p>
             </div>
-            <!-- Reajuste Anual da Carta -->
             <div class="input-group">
                 <label for="reajusteAnualCarta"><b>Reajuste Anual da Carta (%)</b></label>
                 <input type="text" id="reajusteAnualCarta" value="5%" class="valor" data-tipo="percentual">
             </div>
-            <!-- Rendimento Anual da Renda Fixa -->
             <div class="input-group">
                 <label for="rendimentoAnualRF"><b>Rendimento Anual da Renda Fixa (%)</b></label>
                 <input type="text" id="rendimentoAnualRF" value="10%" class="valor" data-tipo="percentual">
             </div>
-            <!-- Percentual do Aluguel -->
             <div class="input-group">
                 <label for="percentualAluguel"><b>Percentual do Aluguel (%)</b></label>
                 <input type="text" id="percentualAluguel" value="0,5%" class="valor" data-tipo="percentual">
             </div>
-            <!-- Valor do Aluguel Inicial (Calculado) -->
             <div class="input-group">
                 <label for="aluguelInicialDisplay"><b>Aluguel Inicial (R$)</b></label>
                 <p id="aluguelInicialDisplay" class="value-display">R$ 0,00</p>
             </div>
-            <!-- Valorização Anual do Imóvel -->
             <div class="input-group">
                 <label for="valorizacaoAnualImovel"><b>Valorização Anual do Imóvel (%)</b></label>
                 <input type="text" id="valorizacaoAnualImovel" value="5%" class="valor" data-tipo="percentual">
             </div>
         </div>
         
-        <!-- Botões de seleção de cenário -->
         <div class="scenario-selection">
             <button id="btnComprarImovel" class="scenario-btn selected">Comprar Imóvel</button>
             <button id="btnDeixarRendendo" class="scenario-btn">Deixar Rendendo</button>
@@ -184,16 +131,6 @@
 
         <div class="resultados">
             <h2>Resultados da Simulação</h2>
-            <div class="save-btn-container">
-                <button id="salvarPdfBtn">Salvar em PDF</button>
-            </div>
-            
-            <!-- Novos indicadores de ROI -->
-            <div class="roi-container">
-                <p><b>ROI Consórcio:</b> <span id="roiConsorcio">0,00%</span></p>
-                <p><b>ROI Renda Fixa:</b> <span id="roiRendaFixa">0,00%</span></p>
-            </div>
-
             <div class="valores-finais">
                 <p><b id="patrimonioConsorcioLabel">Patrimônio Consórcio:</b> <span id="patrimonioConsorcio">R$ 0,00</span></p>
                 <p><b>Patrimônio Renda Fixa:</b> <span id="patrimonioRendaFixa">R$ 0,00</span></p>
@@ -207,7 +144,6 @@
                 <span id="labelValorFinalImovel"><b>Valor Final do Imóvel:</b></span> <span id="valorFinalImovel">R$ 0,00</span>
             </div>
             
-            <!-- Tabela de Fluxo de Caixa -->
             <div class="table-container">
                 <h3>Detalhe do Fluxo de Caixa (Mensal)</h3>
                 <table id="cashFlowTable">
@@ -225,8 +161,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Os dados serão inseridos aqui pelo JavaScript -->
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
         </div>
@@ -263,14 +198,6 @@
         // Função para formatar valores monetários para a tabela
         function formatCurrency(value) {
             return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
-        }
-
-        // Função para formatar o ROI
-        function formatROI(value) {
-            if (isNaN(value) || !isFinite(value)) {
-                return 'N/A';
-            }
-            return value.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '%';
         }
 
         // Simulação principal
@@ -451,15 +378,9 @@
             
             const valorAluguelInicial = valorCarta * (percentualAluguel / 100);
             
-            // Calculate ROI
-            const roiConsorcio = (patrimonioConsorcio - custoTotalOutflow) / custoTotalOutflow * 100;
-            const roiRendaFixa = (patrimonioRendaFixa - somaAportesTotal) / somaAportesTotal * 100;
-
             return {
                 patrimonioFinalConsorcio: patrimonioConsorcio,
                 patrimonioFinalRendaFixa: patrimonioRendaFixa,
-                roiConsorcio,
-                roiRendaFixa,
                 dadosGraficoConsorcio,
                 dadosGraficoRendaFixa,
                 labelsGrafico,
@@ -535,7 +456,7 @@
             document.getElementById('valorLance').innerText = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valorLance);
 
             // Atualiza os rótulos com base no cenário e no mês de compra
-            const shouldDisplayImovelLabels = cenarioSelecionado === 'comprarImovel' || parametros.mesCompraImovel > 0;
+            const shouldDisplayImovelLabels = cenarioSelecionado === 'comprarImovel' || (cenarioSelecionado === 'deixarRendendo' && parametros.mesCompraImovel > 0);
 
             if (shouldDisplayImovelLabels) {
                 document.getElementById('patrimonioConsorcioLabel').innerText = 'Patrimônio Consórcio:';
@@ -553,8 +474,6 @@
             
             const resultado = simularInvestimento(parametros);
             
-            document.getElementById('roiConsorcio').innerText = formatROI(resultado.roiConsorcio);
-            document.getElementById('roiRendaFixa').innerText = formatROI(resultado.roiRendaFixa);
             document.getElementById('aluguelInicialDisplay').innerText = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(resultado.valorAluguelNaContemplacao);
             document.getElementById('patrimonioConsorcio').innerText = `R$ ${resultado.patrimonioFinalConsorcio.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             document.getElementById('patrimonioRendaFixa').innerText = `R$ ${resultado.patrimonioFinalRendaFixa.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
@@ -621,20 +540,6 @@
             displayCashFlowTable(resultado.monthlyData);
         }
 
-        // Event listener para o botão de salvar em PDF
-        document.getElementById('salvarPdfBtn').addEventListener('click', () => {
-            const element = document.querySelector('.container');
-            const opt = {
-                margin: 5,
-                filename: 'simulacao_patrimonio.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-            html2pdf().from(element).set(opt).save();
-        });
-
-
         // Event listeners para os botões de seleção de seguro
         const btnComSeguro = document.getElementById('btnComSeguro');
         const btnSemSeguro = document.getElementById('btnSemSeguro');
@@ -652,15 +557,15 @@
         });
 
         // Event listeners para os botões de seleção de cenário
+        const mesCompraImovelGroup = document.getElementById('mesCompraImovelGroup');
         const btnComprarImovel = document.getElementById('btnComprarImovel');
         const btnDeixarRendendo = document.getElementById('btnDeixarRendendo');
+
         btnComprarImovel.addEventListener('click', () => {
             cenarioSelecionado = 'comprarImovel';
             btnComprarImovel.classList.add('selected');
             btnDeixarRendendo.classList.remove('selected');
-            document.getElementById('valorizacaoAnualImovel').disabled = false;
-            document.getElementById('percentualAluguel').disabled = false;
-            document.getElementById('mesCompraImovel').disabled = true;
+            mesCompraImovelGroup.classList.add('hidden-input-group');
             document.getElementById('mesCompraImovel').value = 0;
             atualizarSimulacao();
         });
@@ -668,9 +573,7 @@
             cenarioSelecionado = 'deixarRendendo';
             btnDeixarRendendo.classList.add('selected');
             btnComprarImovel.classList.remove('selected');
-            document.getElementById('valorizacaoAnualImovel').disabled = false;
-            document.getElementById('percentualAluguel').disabled = false;
-            document.getElementById('mesCompraImovel').disabled = false;
+            mesCompraImovelGroup.classList.remove('hidden-input-group');
             atualizarSimulacao();
         });
 
