@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulador de Patrimônio</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;700&display=swap" rel="stylesheet">
@@ -16,6 +15,9 @@
         p.lead { color: #374151; margin-top: 0; }
         .inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .input-group { display: flex; flex-direction: column; }
+        .input-group.full-width { grid-column: 1 / -1; }
+        .input-group.two-columns { grid-column: span 2; }
+        .input-group.small-field input { width: 90px; }
         .hidden-input-group { display: none; }
         label { font-size: 14px; color: #334155; margin-bottom: 5px; }
         input.valor { padding: 10px; border: 1px solid #e6e9ef; border-radius: 8px; font-size: 16px; width: 100%; box-sizing: border-box; }
@@ -41,9 +43,13 @@
         th { background-color: #f0f2f5; font-weight: bold; text-align: center; white-space: nowrap; }
         tbody tr:nth-child(even) { background-color: #fafafa; }
         .error-message { color: #d63031; font-weight: bold; text-align: center; margin-top: 10px; display: none; }
-        
+        .subtitle { font-size: 18px; font-weight: bold; color: #000; margin-top: 25px; margin-bottom: 15px; text-align: center; width: 100%; grid-column: 1 / -1; }
+        .display-group { display: flex; gap: 15px; }
+        .display-group .input-group { flex-grow: 1; }
+
         @media (max-width: 600px) {
             .inputs { grid-template-columns: 1fr; }
+            .input-group.full-width, .input-group.two-columns, .display-group { grid-column: 1 / -1; flex-direction: column; }
             .radio-group, .scenario-selection { flex-direction: column; }
             .radio-btn, .scenario-btn { width: 100%; }
         }
@@ -53,64 +59,92 @@
     <div class="container">
         <h1>Simulador de Patrimônio</h1>
         <p class="lead">Compare o crescimento do seu patrimônio com <b>consórcio</b> para compra de imóvel vs. investimento em <b>renda fixa</b>.</p>
+        
+        <h2 class="subtitle">Informações do Consórcio</h2>
+
         <div id="error-message" class="error-message"></div>
 
         <div class="inputs">
-            <div class="input-group">
+            
+<div class="input-group">
                 <label for="valorCarta"><b>Valor da Carta de Crédito (R$)</b></label>
-                <input type="text" id="valorCarta" value="R$ 300.000,00" class="valor" data-tipo="moeda">
+                <input type="text" id="valorCarta" value="R$ 300.000,00" class="valor" data-tipo="moeda" maxlength="15">
             </div>
-            <div class="input-group">
+
+            
+<div class="input-group small-field">
+                <label for="prazoTotalMeses"><b>Prazo Total (meses)</b></label>
+                <input type="number" id="prazoTotalMeses" value="200" class="valor" maxlength="3">
+            </div>
+            <div class="input-group small-field">
                 <label for="taxaAdmTotal"><b>Taxa de Administração Total (%)</b></label>
-                <input type="text" id="taxaAdmTotal" value="19%" class="valor" data-tipo="percentual">
+                <input type="text" id="taxaAdmTotal" value="19%" class="valor" data-tipo="percentual" maxlength="3">
             </div>
-            <div class="input-group">
-                <label for="fundoReservaTotal"><b>Fundo de Reserva Total (%)</b></label>
-                <input type="text" id="fundoReservaTotal" value="2%" class="valor" data-tipo="percentual">
+            <div class="input-group small-field">
+                <label for="fundoReservaTotal"><b>Fundo de Reserva Total (%):</b></label>
+                <input type="text" id="fundoReservaTotal" value="2%" class="valor" data-tipo="percentual" maxlength="3">
             </div>
-            <div class="seguro-container">
-                <div class="input-group">
+
+            
+<div class="seguro-container">
+                <div class="input-group small-field">
                     <label for="percentualSeguroMensal"><b>Seguro Mensal (% da Carta)</b></label>
-                    <input type="text" id="percentualSeguroMensal" value="0,038%" class="valor" data-tipo="percentual">
+                    <input type="text" id="percentualSeguroMensal" value="0,038%" class="valor" data-tipo="percentual" maxlength="6">
                 </div>
                 <div class="radio-group">
                     <button id="btnComSeguro" class="radio-btn"><b>Com Seguro</b></button>
                     <button id="btnSemSeguro" class="radio-btn selected"><b>Sem Seguro</b></button>
                 </div>
             </div>
-            <div class="input-group">
-                <label for="prazoTotalMeses"><b>Prazo Total (meses)</b></label>
-                <input type="number" id="prazoTotalMeses" value="200" class="valor">
-            </div>
-            <div class="input-group">
+            <div class="input-group small-field">
                 <label for="percentualReducao"><b>Redução da Parcela até Contemplação (% e Prazo)</b></label>
-                <input type="text" id="percentualReducao" value="50%" class="valor" data-tipo="percentual">
+                <input type="text" id="percentualReducao" value="50%" class="valor" data-tipo="percentual" maxlength="3">
             </div>
-            <div class="input-group">
+            
+            <h2 class="subtitle">Simulação de Contemplação</h2>
+
+            
+<div class="input-group">
+                <label for="valorLanceRecursoProprio"><b>Lance Recurso Proprio (R$)</b></label>
+                <input type="text" id="valorLanceRecursoProprio" value="R$ 100.000,00" class="valor" data-tipo="moeda" maxlength="15">
+            </div>
+            <div class="input-group small-field">
+                <label for="percentualLanceEmbutido"><b>Lance Embutido (%)</b></label>
+                <input type="text" id="percentualLanceEmbutido" value="30%" class="valor" data-tipo="percentual" maxlength="3">
+            </div>
+            <div class="input-group small-field">
                 <label for="mesContemplacao"><b>Mês da Contemplação</b></label>
-                <input type="number" id="mesContemplacao" value="13" class="valor">
+                <input type="number" id="mesContemplacao" value="13" class="valor" maxlength="3">
             </div>
-            <div id="mesCompraImovelGroup" class="input-group hidden-input-group">
-                <label for="mesCompraImovel"><b>Mês da Compra do Imóvel</b></label>
-                <input type="number" id="mesCompraImovel" value="0" class="valor">
-            </div>
-            <div class="input-group">
-                <label for="percentualLance"><b>Percentual do Lance (%)</b></label>
-                <input type="text" id="percentualLance" value="30%" class="valor" data-tipo="percentual">
+
+            
+<div class="input-group">
+                <label for="valorLance"><b>Valor Total do Lance (R$ e %)</b></label>
+                <p id="valorLance" class="value-display">R$ 0,00 (0%)</p>
             </div>
             <div class="input-group">
-                <label for="valorLance"><b>Valor do Lance (R$)</b></label>
-                <p id="valorLance" class="value-display">R$ 0,00</p>
+                <label for="valorCreditoPosContemplacao"><b>Crédito Pós-Contemplação (R$)</b></label>
+                <p id="valorCreditoPosContemplacao" class="value-display">R$ 0,00</p>
             </div>
-            <div class="input-group">
+            
+            <h2 class="subtitle">Dados para Projeção</h2>
+
+            
+<div class="input-group small-field">
                 <label for="reajusteAnualCarta"><b>Reajuste Anual da Carta (%)</b></label>
                 <input type="text" id="reajusteAnualCarta" value="5%" class="valor" data-tipo="percentual">
             </div>
-            <div class="input-group">
+            <div class="input-group small-field">
+                <label for="valorizacaoAnualImovel"><b>Valorização Anual do Imóvel (%)</b></label>
+                <input type="text" id="valorizacaoAnualImovel" value="5%" class="valor" data-tipo="percentual">
+            </div>
+            <div class="input-group small-field">
                 <label for="rendimentoAnualRF"><b>Rendimento Anual da Renda Fixa (%)</b></label>
                 <input type="text" id="rendimentoAnualRF" value="10%" class="valor" data-tipo="percentual">
             </div>
-            <div class="input-group">
+
+            
+<div class="input-group small-field">
                 <label for="percentualAluguel"><b>Percentual do Aluguel (%)</b></label>
                 <input type="text" id="percentualAluguel" value="0,5%" class="valor" data-tipo="percentual">
             </div>
@@ -118,9 +152,10 @@
                 <label for="aluguelInicialDisplay"><b>Aluguel Inicial (R$)</b></label>
                 <p id="aluguelInicialDisplay" class="value-display">R$ 0,00</p>
             </div>
-            <div class="input-group">
-                <label for="valorizacaoAnualImovel"><b>Valorização Anual do Imóvel (%)</b></label>
-                <input type="text" id="valorizacaoAnualImovel" value="5%" class="valor" data-tipo="percentual">
+            
+            <div id="mesCompraImovelGroup" class="input-group hidden-input-group full-width">
+                <label for="mesCompraImovel"><b>Mês da Compra do Imóvel</b></label>
+                <input type="number" id="mesCompraImovel" value="0" class="valor">
             </div>
         </div>
         
@@ -137,7 +172,7 @@
             </div>
             <canvas id="graficoComparativo"></canvas>
             <div class="custo-valorizacao">
-                <b>Custo Total Estimado:</b> <span id="custoTotalOutflow">R$ 0,00</span>
+                <b>Custo Total (dinheiro que saiu):</b> <span id="custoTotalOutflow">R$ 0,00</span>
                 <br>
                 <b>Soma Total dos Aportes:</b> <span id="somaAportesTotal">R$ 0,00</span>
                 <br>
@@ -153,7 +188,8 @@
                             <th>Parcela Consórcio</th>
                             <th>Seguro</th>
                             <th>Aluguel</th>
-                            <th>Lance</th>
+                            <th>Lance Recurso Próprio</th>
+                            <th>Lance Total Abatido</th>
                             <th>Fluxo de Caixa Líquido</th>
                             <th>Aporte Renda Fixa</th>
                             <th>Patrimônio Consórcio</th>
@@ -167,6 +203,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Variável global para rastrear o cenário selecionado
         let cenarioSelecionado = 'comprarImovel';
@@ -184,21 +221,31 @@
             return parseFloat(cleanedValue);
         }
 
-        // Função utilitária para formatar números para exibição
-        function formatValue(inputElement, value) {
-            if (inputElement.dataset.tipo === 'moeda') {
-                return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
-            }
-            if (inputElement.dataset.tipo === 'percentual') {
-                return value.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '%';
-            }
-            return value;
-        }
-        
         // Função para formatar valores monetários para a tabela
         function formatCurrency(value) {
             return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
         }
+        
+        // Funções para formatar e desformatar valores nos inputs
+        function formatInputForDisplay(inputElement) {
+            const tipo = inputElement.dataset.tipo;
+            const numberValue = parseValue(inputElement);
+            if (!isNaN(numberValue)) {
+                if (tipo === 'moeda') {
+                    inputElement.value = `R$ ${numberValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                } else if (tipo === 'percentual') {
+                    inputElement.value = `${numberValue.toLocaleString('pt-BR')} %`;
+                }
+            } else {
+                inputElement.value = '';
+            }
+        }
+
+        function unformatInputForEditing(inputElement) {
+            const numberValue = parseValue(inputElement);
+            inputElement.value = isNaN(numberValue) ? '' : numberValue.toString().replace('.', ',');
+        }
+
 
         // Simulação principal
         function simularInvestimento(parametros) {
@@ -211,7 +258,8 @@
                 percentualReducao,
                 mesContemplacao,
                 mesCompraImovel,
-                percentualLance,
+                valorLanceRecursoProprio,
+                percentualLanceEmbutido,
                 reajusteAnualCarta,
                 rendimentoAnualRF,
                 percentualAluguel,
@@ -229,154 +277,158 @@
             const percentualReducaoDecimal = percentualReducao / 100;
             const reajusteAnualCartaDecimal = reajusteAnualCarta / 100;
             const valorizacaoAnualImovelDecimal = valorizacaoAnualImovel / 100;
-            const rendimentoMensalRF = Math.pow(1 + rendimentoAnualRF / 100, 1 / 12) - 1;
-            const valorizacaoMensalImovel = Math.pow(1 + valorizacaoAnualImovelDecimal, 1 / 12) - 1;
-
+            const rendimentoMensalRF = Math.pow(1 + (rendimentoAnualRF / 100), 1 / 12) - 1;
+            
             let valorCartaAtualizada = valorCarta;
+            
+            // A taxa de adm e o fundo de reserva são calculados sobre a carta original
             let saldoDevedor = valorCarta;
             let saldoTaxaAdm = valorCarta * (taxaAdmTotal / 100);
             let saldoFundoReserva = valorCarta * (fundoReservaTotal / 100);
-
+            
+            const parcelaBaseOriginal = valorCarta / prazoTotalMeses;
+            const parcelaTaxaAdmOriginal = (valorCarta * (taxaAdmTotal / 100)) / prazoTotalMeses;
+            const parcelaFundoReservaOriginal = (valorCarta * (fundoReservaTotal / 100)) / prazoTotalMeses;
+            const parcelaPreContemplacao = (parcelaBaseOriginal + parcelaTaxaAdmOriginal + parcelaFundoReservaOriginal) * (1 - percentualReducaoDecimal);
+            
             let patrimonioConsorcio = 0;
             let patrimonioRendaFixa = 0;
             let custoTotalOutflow = 0;
             let somaAportesTotal = 0;
-            let valorImovel = 0;
-            
-            // Calculate the total value of the consorcio (letter of credit + fees)
-            const valorTotalConsorcio = valorCarta + (valorCarta * (taxaAdmTotal/100)) + (valorCarta * (fundoReservaTotal/100));
-
-            // Calculate the lance based on the total value
-            const valorLance = valorTotalConsorcio * (percentualLance / 100);
+            let valorImovelBase = 0;
+            let valorAluguel = 0;
             
             // Simula mês a mês
             for (let mes = 1; mes <= prazoTotalMeses; mes++) {
 
-                // Reajuste anual da carta, saldos e imóvel
-                // A correção da carta e dos saldos devedores acontece anualmente.
-                if ((mes - 1) % 12 === 0 && mes > 1) {
+                // Reajuste anual da carta e saldos
+                if (mes % 12 === 0) {
                     valorCartaAtualizada *= (1 + reajusteAnualCartaDecimal);
-                    saldoDevedor *= (1 + reajusteAnualCartaDecimal);
-                    saldoTaxaAdm *= (1 + reajusteAnualCartaDecimal);
-                    saldoFundoReserva *= (1 + reajusteAnualCartaDecimal);
                 }
 
                 let parcelaConsorcio = 0;
-                let valorSeguro = 0;
-                let valorAluguel = 0;
-                let fluxoCaixa = 0;
-                let lanceNoMes = 0;
-                let aporteMensalRF = 0;
+                let valorSeguro = seguroHabilitado ? valorCartaAtualizada * (percentualSeguroMensal / 100) : 0;
+                let lanceRecursoProprioNoMes = 0;
+                let lanceTotalAbatidoNoMes = 0;
+                let fluxoDeCaixaLiquido = 0;
+                let aporteParaRendaFixa = 0;
 
-                // Lógica comum de pagamento antes e depois da contemplação
                 if (mes < mesContemplacao) {
-                    const parcelaBase = (valorCarta / prazoTotalMeses);
-                    const parcelaTaxaAdm = (valorCarta * (taxaAdmTotal/100) / prazoTotalMeses);
-                    const parcelaFundoReserva = (valorCarta * (fundoReservaTotal/100) / prazoTotalMeses);
+                    saldoDevedor -= parcelaBaseOriginal;
+                    saldoTaxaAdm -= parcelaTaxaAdmOriginal;
+                    saldoFundoReserva -= parcelaFundoReservaOriginal;
+                    parcelaConsorcio = parcelaPreContemplacao;
                     
-                    parcelaConsorcio = (parcelaBase + parcelaTaxaAdm + parcelaFundoReserva) * (1 - percentualReducaoDecimal);
-                    valorSeguro = seguroHabilitado ? valorCartaAtualizada * (percentualSeguroMensal / 100) : 0;
+                    fluxoDeCaixaLiquido = parcelaConsorcio + valorSeguro;
                     
-                    fluxoCaixa = parcelaConsorcio + valorSeguro;
-                    aporteMensalRF = fluxoCaixa;
-                    patrimonioConsorcio = 0;
-                } else if (mes === mesContemplacao) {
-                    const parcelaBase = (valorCarta / prazoTotalMeses);
-                    const parcelaTaxaAdm = (valorCarta * (taxaAdmTotal/100) / prazoTotalMeses);
-                    const parcelaFundoReserva = (valorCarta * (fundoReservaTotal/100) / prazoTotalMeses);
+                    if (cenarioSelecionado === 'deixarRendendo') {
+                        patrimonioConsorcio = (patrimonioConsorcio + fluxoDeCaixaLiquido) * (1 + rendimentoMensalRF);
+                    } else {
+                        patrimonioConsorcio = 0;
+                    }
+                    aporteParaRendaFixa = fluxoDeCaixaLiquido;
 
-                    parcelaConsorcio = (parcelaBase + parcelaTaxaAdm + parcelaFundoReserva) * (1 - percentualReducaoDecimal);
-                    valorSeguro = seguroHabilitado ? valorCartaAtualizada * (percentualSeguroMensal / 100) : 0;
-                    lanceNoMes = valorLance;
+                } else if (mes === mesContemplacao) {
+                    parcelaConsorcio = parcelaPreContemplacao;
+                    lanceRecursoProprioNoMes = valorLanceRecursoProprio;
                     
-                    fluxoCaixa = parcelaConsorcio + valorSeguro + valorLance;
+                    // Lógica corrigida para calcular o lance embutido com base na carta atualizada
+                    const valorLanceEmbutido = valorCartaAtualizada * (percentualLanceEmbutido / 100);
+                    const valorLanceTotal = valorLanceRecursoProprio + valorLanceEmbutido;
+                    lanceTotalAbatidoNoMes = valorLanceTotal;
+
+                    const saldoDevedorNaContemplacao = saldoDevedor + saldoTaxaAdm + saldoFundoReserva;
+                    const novoSaldoPosLance = saldoDevedorNaContemplacao - valorLanceTotal;
+
+                    // Recalcula os saldos remanescentes após o lance
+                    const proporcao = novoSaldoPosLance / saldoDevedorNaContemplacao;
+                    saldoDevedor *= proporcao;
+                    saldoTaxaAdm *= proporcao;
+                    saldoFundoReserva *= proporcao;
+                    
+                    const valorCreditoLiquido = valorCartaAtualizada - valorLanceEmbutido;
+                    valorImovelBase = valorCreditoLiquido;
                     
                     if (cenarioSelecionado === 'comprarImovel') {
-                        valorImovel = valorCartaAtualizada;
-                        saldoDevedor -= valorLance;
-                        patrimonioConsorcio = valorImovel;
+                        patrimonioConsorcio = valorImovelBase;
+                        valorAluguel = valorImovelBase * (percentualAluguel / 100);
+                        fluxoDeCaixaLiquido = parcelaConsorcio + valorSeguro + lanceRecursoProprioNoMes - valorAluguel;
                     } else { // Deixar Rendendo
-                        // No mes da contemplação, o patrimonio consorcio se torna o valor da carta, que será investido
-                        patrimonioConsorcio = valorCartaAtualizada;
+                        patrimonioConsorcio = (patrimonioConsorcio + valorLanceRecursoProprio) * (1 + rendimentoMensalRF);
+                        fluxoDeCaixaLiquido = parcelaConsorcio + valorSeguro + lanceRecursoProprioNoMes;
                     }
-                    aporteMensalRF = fluxoCaixa;
+                    
+                    aporteParaRendaFixa = Math.max(0, fluxoDeCaixaLiquido);
 
                 } else if (mes > mesContemplacao) {
-                    const parcelasRestantes = prazoTotalMeses - mes + 1;
+                    const parcelasRestantes = prazoTotalMeses - (mes -1);
+
                     const parcelaCredito = saldoDevedor / parcelasRestantes;
                     const parcelaTaxaAdm = saldoTaxaAdm / parcelasRestantes;
                     const parcelaFundoReserva = saldoFundoReserva / parcelasRestantes;
                     
-                    parcelaConsorcio = parcelaCredito + parcelaTaxaAdm + parcelaFundoReserva;
-                    valorSeguro = seguroHabilitado ? valorCartaAtualizada * (percentualSeguroMensal / 100) : 0;
-
+                    // Abatimento correto dos saldos
                     saldoDevedor -= parcelaCredito;
                     saldoTaxaAdm -= parcelaTaxaAdm;
                     saldoFundoReserva -= parcelaFundoReserva;
                     
+                    parcelaConsorcio = parcelaCredito + parcelaTaxaAdm + parcelaFundoReserva;
+                    
                     if (cenarioSelecionado === 'comprarImovel') {
-                        valorAluguel = valorCartaAtualizada * (percentualAluguel / 100);
-                        fluxoCaixa = (parcelaConsorcio + valorSeguro) - valorAluguel;
-                        
-                        // Atualiza o valor do imóvel com a valorização mensal
-                        valorImovel *= (1 + valorizacaoMensalImovel);
-                        patrimonioConsorcio = valorImovel;
-                        
-                        aporteMensalRF = Math.max(0, fluxoCaixa);
+                        // Atualiza o valor do imóvel anualmente
+                        if ((mes - mesContemplacao) % 12 === 0) {
+                            valorImovelBase *= (1 + valorizacaoAnualImovelDecimal);
+                            valorAluguel = valorImovelBase * (percentualAluguel / 100);
+                        }
+                        patrimonioConsorcio = valorImovelBase;
+                        fluxoDeCaixaLiquido = (parcelaConsorcio + valorSeguro) - valorAluguel;
                     } else { // Deixar Rendendo
-                        fluxoCaixa = parcelaConsorcio + valorSeguro;
-                        aporteMensalRF = fluxoCaixa;
+                        fluxoDeCaixaLiquido = parcelaConsorcio + valorSeguro;
                         
-                        // Lógica para compra do imóvel após a contemplação
                         if (mesCompraImovel > 0 && mes >= mesCompraImovel) {
                             if (mes === mesCompraImovel) {
-                                // Mês da compra do imóvel
-                                valorImovel = patrimonioConsorcio; // O valor do imovel é o patrimonio acumulado na RF até este mes
-                                patrimonioConsorcio = valorImovel; 
+                                valorImovelBase = (valorCartaAtualizada - valorLanceEmbutido) + valorLanceRecursoProprio;
+                                patrimonioConsorcio = valorImovelBase; 
+                                valorAluguel = valorImovelBase * (percentualAluguel / 100);
                             } else {
-                                // Depois do mes da compra, o patrimonio consorcio se torna o valor do imovel
-                                valorAluguel = valorCartaAtualizada * (percentualAluguel / 100);
-                                fluxoCaixa = (parcelaConsorcio + valorSeguro) - valorAluguel;
-                                aporteMensalRF = Math.max(0, fluxoCaixa);
-                                
-                                // O valor do imóvel passa a ser corrigido mensalmente pela valorização
-                                valorImovel *= (1 + valorizacaoMensalImovel);
-                                patrimonioConsorcio = valorImovel;
+                                if ((mes - mesCompraImovel) % 12 === 0) {
+                                     valorImovelBase *= (1 + valorizacaoAnualImovelDecimal);
+                                     valorAluguel = valorImovelBase * (percentualAluguel / 100);
+                                }
                             }
+                            fluxoDeCaixaLiquido = (parcelaConsorcio + valorSeguro) - valorAluguel;
+                            patrimonioConsorcio = valorImovelBase;
                         } else {
-                            // Deixar rendendo sem comprar imóvel, o patrimonio consorcio cresce na RF
-                            patrimonioConsorcio *= (1 + rendimentoMensalRF);
+                            patrimonioConsorcio = (patrimonioConsorcio + fluxoDeCaixaLiquido) * (1 + rendimentoMensalRF);
                         }
                     }
+                    aporteParaRendaFixa = Math.max(0, fluxoDeCaixaLiquido);
                 }
                 
                 // Lógica de cálculo do patrimônio da renda fixa
-                patrimonioRendaFixa = (patrimonioRendaFixa + aporteMensalRF) * (1 + rendimentoMensalRF);
-                somaAportesTotal += aporteMensalRF;
-                custoTotalOutflow += fluxoCaixa;
+                patrimonioRendaFixa = (patrimonioRendaFixa + aporteParaRendaFixa) * (1 + rendimentoMensalRF);
+                custoTotalOutflow += Math.max(0, fluxoDeCaixaLiquido);
+                somaAportesTotal += aporteParaRendaFixa;
                 
-                // Gravação dos dados anuais para o gráfico
                 if (mes % 12 === 0 || mes === prazoTotalMeses) {
                     labelsGrafico.push(`Ano ${Math.ceil(mes / 12)}`);
                     dadosGraficoConsorcio.push(patrimonioConsorcio);
                     dadosGraficoRendaFixa.push(patrimonioRendaFixa);
                 }
                 
-                // Salva os dados mensais para a tabela
                 monthlyData.push({
                     mes: mes,
                     parcelaConsorcio: parcelaConsorcio,
                     valorSeguro: valorSeguro,
                     valorAluguel: valorAluguel,
-                    lance: lanceNoMes,
-                    fluxoCaixa: fluxoCaixa,
-                    aporteMensalRF: aporteMensalRF,
+                    lanceRecursoProprio: lanceRecursoProprioNoMes,
+                    lanceTotalAbatido: lanceTotalAbatidoNoMes,
+                    fluxoCaixa: fluxoDeCaixaLiquido,
+                    aporteMensalRF: aporteParaRendaFixa,
                     patrimonioConsorcio: patrimonioConsorcio,
                     patrimonioRendaFixa: patrimonioRendaFixa
                 });
             }
-            
-            const valorAluguelInicial = valorCarta * (percentualAluguel / 100);
             
             return {
                 patrimonioFinalConsorcio: patrimonioConsorcio,
@@ -386,8 +438,8 @@
                 labelsGrafico,
                 custoTotalOutflow,
                 somaAportesTotal,
-                valorFinalImovel: valorImovel,
-                valorAluguelNaContemplacao: valorAluguelInicial,
+                valorFinalImovel: valorImovelBase,
+                valorAluguelNaContemplacao: valorAluguel,
                 monthlyData
             };
         }
@@ -404,7 +456,8 @@
                     <td>${formatCurrency(mesData.parcelaConsorcio)}</td>
                     <td>${mesData.valorSeguro ? formatCurrency(mesData.valorSeguro) : '-'}</td>
                     <td>${mesData.valorAluguel ? formatCurrency(mesData.valorAluguel) : '-'}</td>
-                    <td>${mesData.lance ? formatCurrency(mesData.lance) : '-'}</td>
+                    <td>${mesData.lanceRecursoProprio ? formatCurrency(mesData.lanceRecursoProprio) : '-'}</td>
+                    <td>${mesData.lanceTotalAbatido ? formatCurrency(mesData.lanceTotalAbatido) : '-'}</td>
                     <td>${formatCurrency(mesData.fluxoCaixa)}</td>
                     <td>${formatCurrency(mesData.aporteMensalRF)}</td>
                     <td>${formatCurrency(mesData.patrimonioConsorcio)}</td>
@@ -424,7 +477,8 @@
                 percentualReducao: parseValue(document.getElementById('percentualReducao')),
                 mesContemplacao: parseInt(document.getElementById('mesContemplacao').value),
                 mesCompraImovel: parseInt(document.getElementById('mesCompraImovel').value),
-                percentualLance: parseValue(document.getElementById('percentualLance')),
+                valorLanceRecursoProprio: parseValue(document.getElementById('valorLanceRecursoProprio')),
+                percentualLanceEmbutido: parseValue(document.getElementById('percentualLanceEmbutido')),
                 reajusteAnualCarta: parseValue(document.getElementById('reajusteAnualCarta')),
                 rendimentoAnualRF: parseValue(document.getElementById('rendimentoAnualRF')),
                 percentualAluguel: parseValue(document.getElementById('percentualAluguel')),
@@ -434,6 +488,11 @@
 
             const errorMessageElement = document.getElementById('error-message');
             // Validação das novas regras
+            if (parametros.percentualLanceEmbutido > 50) {
+                errorMessageElement.innerText = "O lance embutido não pode ultrapassar 50% do valor da carta de crédito.";
+                errorMessageElement.style.display = 'block';
+                return;
+            }
             if (cenarioSelecionado === 'deixarRendendo' && parametros.mesCompraImovel > 0) {
                 if (parametros.mesCompraImovel < parametros.mesContemplacao) {
                     errorMessageElement.innerText = "O mês da compra do imóvel não pode ser menor que o mês da contemplação.";
@@ -448,30 +507,31 @@
             }
             errorMessageElement.style.display = 'none';
             
-            // Calcula o valor total do consórcio (carta + taxas)
-            const valorTotalConsorcio = parametros.valorCarta + (parametros.valorCarta * (parametros.taxaAdmTotal/100)) + (parametros.valorCarta * (parametros.fundoReservaTotal/100));
-
-            // Recalcula o valor do lance com base no valor total do consórcio
-            const valorLance = valorTotalConsorcio * (parametros.percentualLance / 100);
-            document.getElementById('valorLance').innerText = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valorLance);
-
-            // Atualiza os rótulos com base no cenário e no mês de compra
-            const shouldDisplayImovelLabels = cenarioSelecionado === 'comprarImovel' || (cenarioSelecionado === 'deixarRendendo' && parametros.mesCompraImovel > 0);
-
-            if (shouldDisplayImovelLabels) {
+            // Lógica corrigida para calcular o valor do lance com recursos próprios e embutido
+            let valorCartaContemplacao = parametros.valorCarta;
+            for (let i = 1; i < parametros.mesContemplacao; i++) {
+                if (i % 12 === 0) {
+                    valorCartaContemplacao *= (1 + parametros.reajusteAnualCarta / 100);
+                }
+            }
+            const valorLanceEmbutido = valorCartaContemplacao * (parametros.percentualLanceEmbutido / 100);
+            const valorLanceTotal = parametros.valorLanceRecursoProprio + valorLanceEmbutido;
+            const valorCreditoPosContemplacao = valorCartaContemplacao - valorLanceEmbutido;
+            
+            document.getElementById('valorLance').innerText = `${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valorLanceTotal)} (${(valorLanceTotal / valorCartaContemplacao * 100).toFixed(2)}%)`;
+            document.getElementById('valorCreditoPosContemplacao').innerText = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valorCreditoPosContemplacao);
+            
+            // Condicional para mudar a label do patrimônio
+            if (cenarioSelecionado === 'deixarRendendo') {
+                document.getElementById('patrimonioConsorcioLabel').innerText = 'Patrimônio Investido:';
+                document.getElementById('labelValorFinalImovel').style.display = 'none';
+                document.getElementById('valorFinalImovel').style.display = 'none';
+            } else {
                 document.getElementById('patrimonioConsorcioLabel').innerText = 'Patrimônio Consórcio:';
                 document.getElementById('labelValorFinalImovel').style.display = 'inline';
                 document.getElementById('valorFinalImovel').style.display = 'inline';
-                document.getElementById('custoTotalOutflow').style.display = 'inline';
-                document.getElementById('somaAportesTotal').style.display = 'inline';
-            } else {
-                document.getElementById('patrimonioConsorcioLabel').innerText = 'Patrimônio Consórcio (Alavancado):';
-                document.getElementById('labelValorFinalImovel').style.display = 'none';
-                document.getElementById('valorFinalImovel').style.display = 'none';
-                document.getElementById('custoTotalOutflow').style.display = 'none';
-                document.getElementById('somaAportesTotal').style.display = 'none';
             }
-            
+
             const resultado = simularInvestimento(parametros);
             
             document.getElementById('aluguelInicialDisplay').innerText = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(resultado.valorAluguelNaContemplacao);
@@ -569,6 +629,7 @@
             document.getElementById('mesCompraImovel').value = 0;
             atualizarSimulacao();
         });
+
         btnDeixarRendendo.addEventListener('click', () => {
             cenarioSelecionado = 'deixarRendendo';
             btnDeixarRendendo.classList.add('selected');
@@ -576,27 +637,34 @@
             mesCompraImovelGroup.classList.remove('hidden-input-group');
             atualizarSimulacao();
         });
-
-        // Event listener para formatar o valor quando o campo perde o foco
-        document.querySelectorAll('input.valor[data-tipo]').forEach(input => {
-            input.addEventListener('blur', (event) => {
-                const parsedValue = parseValue(event.target);
-                event.target.value = formatValue(event.target, parsedValue);
-            });
-            input.addEventListener('focus', (event) => {
-                const parsedValue = parseValue(event.target);
-                event.target.value = parsedValue;
-            });
+        
+        // Event listeners para os campos de input
+        const inputs = document.querySelectorAll('.inputs input.valor');
+        inputs.forEach(input => {
+            const tipo = input.dataset.tipo;
+            if (tipo === 'moeda' || tipo === 'percentual') {
+                // Ao focar, remove a formatação para facilitar a digitação
+                input.addEventListener('focus', () => {
+                    unformatInputForEditing(input);
+                });
+                // Ao perder o foco, formata o valor e atualiza a simulação
+                input.addEventListener('blur', () => {
+                    formatInputForDisplay(input);
+                    atualizarSimulacao();
+                });
+            } else {
+                // Para inputs não-formatados, apenas atualiza no 'blur'
+                input.addEventListener('blur', atualizarSimulacao);
+            }
         });
-
-        // Event listener para atualizar a simulação em tempo real para campos chave
-        document.querySelectorAll('input.valor').forEach(input => {
-            input.addEventListener('input', atualizarSimulacao);
-        });
-
+        
+        // Formatação de valores ao carregar a página
         document.addEventListener('DOMContentLoaded', () => {
-          ctx = document.getElementById('graficoComparativo').getContext('2d');
-          atualizarSimulacao();
+            inputs.forEach(input => {
+                formatInputForDisplay(input);
+            });
+            ctx = document.getElementById('graficoComparativo').getContext('2d');
+            atualizarSimulacao();
         });
     </script>
 </body>
